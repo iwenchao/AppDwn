@@ -1,5 +1,6 @@
 package com.chaos.loader
 
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -51,6 +52,7 @@ class DownloadTask(
                 file.createNewFile()
             } else {
                 downloadedBytes = file.length()
+                Log.i("DOWNLOAD","断点续传："+downloadedBytes)
             }
 
             listener.onStart()

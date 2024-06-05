@@ -11,7 +11,7 @@ import java.util.concurrent.PriorityBlockingQueue
  * @Description :描述
  */
 class DownloadManager private constructor() {
-    private val maxConcurrentDownloads = 3
+    private val maxConcurrentDownloads = 1
     private val executorService = Executors.newFixedThreadPool(maxConcurrentDownloads)
     private val client = OkHttpClient()
     private val taskQueue = PriorityBlockingQueue<DownloadTask>()
