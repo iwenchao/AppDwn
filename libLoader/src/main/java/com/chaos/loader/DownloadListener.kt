@@ -11,4 +11,5 @@ interface DownloadListener {
     fun onProgress(downloaded: Long, total: Long)
     fun onComplete()
     fun onError(exception: Exception)
+    fun onStatusChange(status: DownloadStatus)
 }

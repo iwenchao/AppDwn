@@ -7,5 +7,5 @@ package com.chaos.loader
  * @Description :描述
  */
 enum class DownloadStatus {
-    STARTED, IN_PROGRESS, COMPLETED, FAILED, PAUSED
+    PENDING, STARTED, IN_PROGRESS, PAUSED, RESUMED, COMPLETED, FAILED, CANCELLED
 }

@@ -28,16 +28,21 @@ class DownloadTask(
     private val pauseCondition = lock.newCondition()
     @Volatile private var paused = false
     @Volatile private var cancelled = false
+    @Volatile private var status: DownloadStatus = DownloadStatus.PENDING
 
     fun pause() {
         lock.withLock {
             paused = true
+            status = DownloadStatus.PAUSED
+            listener.onStatusChange(status)
         }
     }
 
     fun resume() {
         lock.withLock {
             paused = false
+            status = DownloadStatus.RESUMED
+            listener.onStatusChange(status)
             pauseCondition.signal()
         }
     }
@@ -52,10 +57,10 @@ class DownloadTask(
                 file.createNewFile()
             } else {
                 downloadedBytes = file.length()
-                Log.i("DOWNLOAD","断点续传："+downloadedBytes)
             }
 
-            listener.onStart()
+            status = DownloadStatus.STARTED
+            listener.onStatusChange(status)
 
             val request = Request.Builder()
                 .url(url)
@@ -65,6 +70,8 @@ class DownloadTask(
             val response = client.newCall(request).execute()
 
             if (response.code == 416) {
+                status = DownloadStatus.COMPLETED
+                listener.onStatusChange(status)
                 listener.onComplete()
                 return
             }
@@ -87,17 +94,25 @@ class DownloadTask(
                             while (paused) {
                                 pauseCondition.await()
                             }
-                            if (cancelled) return
+                            if (cancelled) {
+                                status = DownloadStatus.CANCELLED
+                                listener.onStatusChange(status)
+                                return
+                            }
                         }
                         output.write(buffer, 0, bytesRead)
                         totalBytesRead += bytesRead
                         listener.onProgress(totalBytesRead, fileSize)
                     }
 
+                    status = DownloadStatus.COMPLETED
+                    listener.onStatusChange(status)
                     listener.onComplete()
                 }
             }
         } catch (e: Exception) {
+            status = DownloadStatus.FAILED
+            listener.onStatusChange(status)
             listener.onError(e)
         }
     }
